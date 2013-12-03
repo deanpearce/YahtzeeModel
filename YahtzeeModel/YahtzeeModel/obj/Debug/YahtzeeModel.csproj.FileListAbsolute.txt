@@ -1,0 +1,10 @@
+C:\Users\Dean\School\COMP4004\YahtzeeModel\YahtzeeModel\bin\Debug\YahtzeeModel.dll
+C:\Users\Dean\School\COMP4004\YahtzeeModel\YahtzeeModel\bin\Debug\YahtzeeModel.pdb
+C:\Users\Dean\School\COMP4004\YahtzeeModel\YahtzeeModel\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\Dean\School\COMP4004\YahtzeeModel\YahtzeeModel\obj\Debug\YahtzeeModel.dll
+C:\Users\Dean\School\COMP4004\YahtzeeModel\YahtzeeModel\obj\Debug\YahtzeeModel.pdb
+F:\Media\Documents\School\COMP4004A1P3\YahtzeeModel\YahtzeeModel\bin\Debug\YahtzeeModel.dll
+F:\Media\Documents\School\COMP4004A1P3\YahtzeeModel\YahtzeeModel\bin\Debug\YahtzeeModel.pdb
+F:\Media\Documents\School\COMP4004A1P3\YahtzeeModel\YahtzeeModel\obj\Debug\ResolveAssemblyReference.cache
+F:\Media\Documents\School\COMP4004A1P3\YahtzeeModel\YahtzeeModel\obj\Debug\YahtzeeModel.dll
+F:\Media\Documents\School\COMP4004A1P3\YahtzeeModel\YahtzeeModel\obj\Debug\YahtzeeModel.pdb

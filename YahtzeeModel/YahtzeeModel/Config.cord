@@ -1,0 +1,140 @@
+﻿// This is a Spec Explorer coordination script (Cord version 1.0).
+// Here is where you define configurations and machines describing the
+// exploration to be performed.
+
+using YahtzeeModel;
+
+/// Contains actions of the model, bounds, and switches.
+config Main 
+{
+    /// Configure the model to be tested
+    action abstract static void SUT.NewGame();
+    action abstract static void SUT.hold(int die);
+    action abstract static int SUT.Score(ScoreType score);
+
+    switch StateBound = 1280;
+    switch StepBound = 1280;
+    switch PathDepthBound = 1280;
+    switch TestClassBase = "vs";
+    switch GeneratedTestNamespace = "YahtzeeModel.TestSuite";
+    switch TestEnabled = false;
+    switch ForExploration = true;
+}
+
+config RollConstraint : Main
+{
+    action abstract void SUT.RollAll(int i1, int i2, int i3, int i4, int i5)
+        where{.
+            Condition.In(i1, 1, 2, 3, 4, 5, 6);
+            Condition.In(i2, 1, 2, 3, 4, 5, 6);
+            Condition.In(i3, 1, 2, 3, 4, 5, 6);
+            Condition.In(i4, 1, 2, 3, 4, 5, 6);
+            Condition.In(i5, 1, 2, 3, 4, 5, 6);
+        .};
+}
+
+config FixedDice : Main
+{
+    action abstract void SUT.RollAll(int i1, int i2, int i3, int i4, int i5)
+        where{.
+            int[] values = new int[] { 1, 2, 3, 4, 5, 6 };
+            Condition.IsTrue(i1 == Probability.Choose(values));
+            Condition.IsTrue(i2 == Probability.Choose(values));
+            Condition.IsTrue(i3 == Probability.Choose(values));
+            Condition.IsTrue(i4 == Probability.Choose(values));
+            Condition.IsTrue(i5 == Probability.Choose(values));
+        .};
+}
+
+machine FixedDice() : FixedDice
+{
+    construct model program from FixedDice
+}
+
+machine RollTest() : FixedDice
+{
+    (NewGame; RollAll*) || (construct model program from RollConstraint)
+}
+
+// Additional test to verify rolling three times
+// Using + to imply that the user MUST roll at least once in a turn
+machine FixedRollTest() : FixedDice
+{
+    (NewGame; RollAll(1, 2, 3, 4, 5)+) || (construct model program from RollConstraint)
+}
+
+machine hold1() : RollConstraint
+{
+    (NewGame; RollAll(1,1,1,1,1); hold(1); hold(2); hold(3); RollAll)
+        || (construct model program from RollConstraint)
+}
+
+machine hold2() : RollConstraint
+{
+    (NewGame; RollAll(1,1,1,1,1); hold(1); hold(2); hold(3); hold(4); RollAll; Score(_))
+        || (construct model program from RollConstraint)
+}
+
+// 36 combinations ending in 3,3,3 to score
+// Also checks that scoring 2, 2, 1, 1, 3 will score 0
+machine ScoreThreeOfAKind() : RollConstraint
+{
+    (NewGame; (RollAll(_, _, 3, 3, 3); Score(ScoreType.ThreeOfAKind) 
+            | RollAll(2, 2, 1, 1, 3); Score(ScoreType.ThreeOfAKind)))
+        || (construct model program from RollConstraint)
+}
+
+// This machine does NOT count 1, 1, 1, 1, 1 as a Full House
+machine ScoreFullHouse() : RollConstraint
+{
+    (NewGame; (RollAll(2, 2, 3, 3, 3); Score(ScoreType.FullHouse) 
+            | RollAll(2, 2, 2, 2, 2); Score(ScoreType.FullHouse)))
+        || (construct model program from RollConstraint)
+}
+
+// Test for two rounds. Check if an already scored category will show incorrectly in next round
+machine TwoFixedRounds() : RollConstraint
+{
+    (NewGame; RollAll(1,2,3,4,5); Score(ScoreType.LargeStraight);
+        RollAll(2,3,4,5,6); Score(_)) || (construct model program from RollConstraint)
+}
+
+// Test upper section bonus
+machine upperBonus() : RollConstraint
+{
+    (NewGame;
+        RollAll(1, 1, 1, 1, 2); Score(ScoreType.One);
+        RollAll(2, 2, 2, 2, 1); Score(ScoreType.Two);
+        RollAll(3, 3, 3, 3, 4); Score(ScoreType.Three);
+        RollAll(4, 4, 4, 4, 5); Score(ScoreType.Four);
+        RollAll(5, 5, 5, 5, 6); Score(ScoreType.Five);
+        RollAll(6, 6, 6, 6, 1); Score(ScoreType.Six);
+        RollAll(6, 6, 6, 6, 5); Score(ScoreType.ThreeOfAKind);
+        RollAll(6, 6, 6, 6, 5); Score(ScoreType.FourOfAKind);
+        RollAll(6, 6, 6, 5, 5); Score(ScoreType.FullHouse);
+        RollAll(1, 2, 3, 4, 6); Score(ScoreType.SmallStraight);
+        RollAll(1, 2, 3, 4, 5); Score(ScoreType.LargeStraight);
+        RollAll(6, 6, 6, 6, 5); Score(ScoreType.Chance);
+        RollAll(6, 6, 6, 6, 5); Score(ScoreType.Yahtzee))
+    || (construct model program from RollConstraint)
+}
+
+// Test for high score -- Total should be 375 as I have not implemented the bonuses
+machine HighestScore() : RollConstraint
+{
+    (NewGame;
+        RollAll(1, 1, 1, 1, 1); Score(ScoreType.Yahtzee);
+        RollAll(1, 1, 1, 1, 1); Score(ScoreType.One);
+        RollAll(2, 2, 2, 2, 2); Score(ScoreType.Two);
+        RollAll(3, 3, 3, 3, 3); Score(ScoreType.Three);
+        RollAll(4, 4, 4, 4, 4); Score(ScoreType.Four);
+        RollAll(5, 5, 5, 5, 5); Score(ScoreType.Five);
+        RollAll(6, 6, 6, 6, 6); Score(ScoreType.Six);
+        RollAll(6, 6, 6, 6, 6); Score(ScoreType.ThreeOfAKind);
+        RollAll(6, 6, 6, 6, 6); Score(ScoreType.FourOfAKind);
+        RollAll(6, 6, 6, 5, 5); Score(ScoreType.FullHouse);
+        RollAll(1, 2, 3, 4, 6); Score(ScoreType.SmallStraight);
+        RollAll(2, 3, 4, 5, 6); Score(ScoreType.LargeStraight);
+        RollAll(6, 6, 6, 6, 6); Score(ScoreType.Chance)) 
+    || (construct model program from RollConstraint)
+}

@@ -1,0 +1,2 @@
+# Yahtzee Model - Spec Explorer
+This is a simplified model of the popular game Yahtzee that has been modeled and explored using Microsoft Spec Explorer. Spec Explorer allows users to generate complex testing scenarios from basic state-based rules.
